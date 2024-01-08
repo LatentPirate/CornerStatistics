@@ -18,8 +18,14 @@ class PlotDrawer:
         paths.append(self._plot_and_save(dataframe, 'Mean Max Min Deviations', 'mean', 'max', 'min'))
         paths.append(self._plot_and_save(dataframe, 'Floor Deviations', 'floor_mean', 'floor_max', 'floor_min'))
         paths.append(self._plot_and_save(dataframe, 'Ceiling Deviations', 'ceiling_mean', 'ceiling_max', 'ceiling_min'))
-        # TODO: Maybe add floor vs ceiling deviations?
-        
+
+        # Plot correlations between floor and ceiling values
+        paths.append(self._plot_and_save_correlation(dataframe, 'floor_mean', 'ceiling_mean',
+                                                     'Floor Mean vs Ceiling Mean Correlation'))
+        paths.append(self._plot_and_save_correlation(dataframe, 'floor_min', 'ceiling_min',
+                                                     'Floor Min vs Ceiling Min Correlation'))
+        paths.append(self._plot_and_save_correlation(dataframe, 'floor_max', 'ceiling_max',
+                                                     'Floor Max vs Ceiling Max Correlation'))
 
         return paths
 
@@ -32,6 +38,18 @@ class PlotDrawer:
         # Save the plot
         plot_path = os.path.join(self.plot_folder, f"{title.replace(' ', '_').lower()}_plot.png")
         plot.savefig(plot_path)
+        plt.close()
+
+        return plot_path
+
+    def _plot_and_save_correlation(self, dataframe, x_column, y_column, title):
+        # Create a scatter plot with regression line for correlation
+        plot = sns.regplot(x=dataframe[x_column], y=dataframe[y_column])
+        plot.set(title=title)
+
+        # Save the plot
+        plot_path = os.path.join(self.plot_folder, f"{title.replace(' ', '_').lower()}_plot.png")
+        plot.figure.savefig(plot_path)
         plt.close()
 
         return plot_path
