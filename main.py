@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -10,7 +12,7 @@ class PlotDrawer:
         if not os.path.exists(self.plot_folder):
             os.makedirs(self.plot_folder)
 
-    def draw_plots(self, dataframe):
+    def draw_plots(self, dataframe: pd.DataFrame) -> list:
         paths = []
 
         # Plot and save for each relevant comparison
@@ -27,9 +29,17 @@ class PlotDrawer:
         paths.append(self._plot_and_save_correlation(dataframe, 'floor_max', 'ceiling_max',
                                                      'Floor Max vs Ceiling Max Correlation'))
 
+      # Plot correlations between gt_corners and other values
+        paths.append(self._plot_and_save_bar(dataframe, 'gt_corners', 'mean', 'GT corners vs Mean Deviation '
+                                                                              'Correlation'))
+        paths.append(self._plot_and_save_bar(dataframe, 'gt_corners', 'floor_mean', 'GT corners vs Floor Mean '
+                                                                                    'Deviation Correlation'))
+        paths.append(self._plot_and_save_bar(dataframe, 'gt_corners', 'ceiling_mean', 'GT corners vs Ceiling Mean '
+                                                                                      'Deviation Correlation'))
+
         return paths
 
-    def _plot_and_save(self, dataframe, title, *columns):
+    def _plot_and_save(self, dataframe: pd.DataFrame, title: str, *columns) -> str:
         # Create a pair plot for the specified columns
         plot_data = dataframe[[*columns]]
         plot = sns.pairplot(plot_data)
@@ -42,7 +52,7 @@ class PlotDrawer:
 
         return plot_path
 
-    def _plot_and_save_correlation(self, dataframe, x_column, y_column, title):
+    def _plot_and_save_correlation(self, dataframe: pd.DataFrame, x_column: str, y_column: str, title: str) -> str:
         # Create a scatter plot with regression line for correlation
         plot = sns.regplot(x=dataframe[x_column], y=dataframe[y_column])
         plot.set(title=title)
@@ -54,8 +64,20 @@ class PlotDrawer:
 
         return plot_path
 
+    def _plot_and_save_bar(self, dataframe: pd.DataFrame, x_column: str, y_column: str, title: str) -> str:
+        # Create a bar plot for the correlation
+        plot = sns.barplot(x=dataframe[x_column], y=dataframe[y_column])
+        plot.set(title=title)
 
-def read_and_draw_plots(json_file_path):
+        # Save the plot
+        plot_path = os.path.join(self.plot_folder, f"{title.replace(' ', '_').lower()}_plot.png")
+        plot.figure.savefig(plot_path)
+        plt.close()
+
+        return plot_path
+
+
+def read_and_draw_plots(json_file_path: str) -> list:
     # Read JSON file into a pandas dataframe
     dataframe = pd.read_json(json_file_path)
 
@@ -66,9 +88,15 @@ def read_and_draw_plots(json_file_path):
     return plot_paths
 
 
-# Example usage:
-json_file_path = 'deviation.json'
-result_paths = read_and_draw_plots(json_file_path)
-print("Plots saved at the following paths:")
-for path in result_paths:
-    print(path)
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("error: incorrect input arguments")
+        print("example:")
+        print("\tpython main.py path/to/deviation.json")
+        sys.exit(1)
+    json_file_path = sys.argv[1]
+    result_paths = read_and_draw_plots(json_file_path)
+    print("Plots saved at the following paths:")
+    for path in result_paths:
+        print(path)
+
