@@ -7,12 +7,20 @@ import seaborn as sns
 
 
 class PlotDrawer:
+    """
+    Class for drawing statistics
+    """
     def __init__(self):
         self.plot_folder = "plots"
         if not os.path.exists(self.plot_folder):
             os.makedirs(self.plot_folder)
 
     def draw_plots(self, dataframe: pd.DataFrame) -> list:
+        """
+        Draw plots for comparing different columns of dataframe
+        :param dataframe: input data
+        :return: list of paths to plots
+        """
         paths = []
 
         # Plot and save for each relevant comparison
@@ -29,7 +37,7 @@ class PlotDrawer:
         paths.append(self._plot_and_save_correlation(dataframe, 'floor_max', 'ceiling_max',
                                                      'Floor Max vs Ceiling Max Correlation'))
 
-      # Plot correlations between gt_corners and other values
+        # Plot correlations between gt_corners and other values
         paths.append(self._plot_and_save_bar(dataframe, 'gt_corners', 'mean', 'GT corners vs Mean Deviation '
                                                                               'Correlation'))
         paths.append(self._plot_and_save_bar(dataframe, 'gt_corners', 'floor_mean', 'GT corners vs Floor Mean '
@@ -40,6 +48,14 @@ class PlotDrawer:
         return paths
 
     def _plot_and_save(self, dataframe: pd.DataFrame, title: str, *columns) -> str:
+        """
+        Plot pairwise relationships of specific columns from dataframe
+        and save it as .png file
+        :param dataframe: input dataframe
+        :param title: plot title
+        :param columns: columns for pairwise relationships
+        :return: path to plot
+        """
         # Create a pair plot for the specified columns
         plot_data = dataframe[[*columns]]
         plot = sns.pairplot(plot_data)
@@ -53,6 +69,15 @@ class PlotDrawer:
         return plot_path
 
     def _plot_and_save_correlation(self, dataframe: pd.DataFrame, x_column: str, y_column: str, title: str) -> str:
+        """
+        Plot regression correlation x and y columns from dataframe
+        and save it as .png file
+        :param dataframe: input dataframe
+        :param x_column: x value
+        :param y_column: y value
+        :param title: plot title
+        :return: path to plot
+        """
         # Create a scatter plot with regression line for correlation
         plot = sns.regplot(x=dataframe[x_column], y=dataframe[y_column])
         plot.set(title=title)
@@ -65,6 +90,15 @@ class PlotDrawer:
         return plot_path
 
     def _plot_and_save_bar(self, dataframe: pd.DataFrame, x_column: str, y_column: str, title: str) -> str:
+        """
+        Plot statistical estimate of x and y columns from dataframe
+        and save it as .png file
+        :param dataframe: input dataframe
+        :param x_column: x value
+        :param y_column: y value
+        :param title: plot title
+        :return: path to plot
+        """
         # Create a bar plot for the correlation
         plot = sns.barplot(x=dataframe[x_column], y=dataframe[y_column])
         plot.set(title=title)
@@ -78,6 +112,12 @@ class PlotDrawer:
 
 
 def read_and_draw_plots(json_file_path: str) -> list:
+    """
+    Read json dataframe and plot relationships between
+    it columns
+    :param json_file_path: path to file
+    :return: list of plot paths
+    """
     # Read JSON file into a pandas dataframe
     dataframe = pd.read_json(json_file_path)
 
